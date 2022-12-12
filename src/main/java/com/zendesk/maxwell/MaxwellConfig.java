@@ -598,6 +598,13 @@ public class MaxwellConfig extends AbstractConfig {
 	 */
 	public String redisType;
 
+	public String mqttPublisherId;
+	public int mqttConnectionTimeout;
+	public String mqttUrl;
+	public String mqttTopic;
+	public boolean mqttTopicPerTable;
+	public int mqttQos;
+
 	/**
 	 * path to file containing javascript filtering functions
 	 */
@@ -956,6 +963,15 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts("redis_sentinels", "List of Redis sentinels in format host1:port1,host2:port2,host3:port3. It can be used instead of redis_host and redis_port" ).withRequiredArg();
 		parser.accepts("redis_sentinel_master_name", "Redis sentinel master name. It is used with redis_sentinels" ).withRequiredArg();
 
+		parser.section( "mqtt" );
+
+		parser.accepts( "mqtt_producer_id", "Producer ID. Default is random." ).withOptionalArg();
+		parser.accepts( "mqtt_connection_timeout", "Connection timeout in seconds. Default is 30." ).withOptionalArg().ofType(Integer.class);
+		parser.accepts( "mqtt_url", "URL of MQTT broker." ).withRequiredArg();
+		parser.accepts( "mqtt_topic", "MQTT Topic to publish to." ).withRequiredArg();
+		parser.accepts( "mqtt_topic_per_table", "Publish to one MQTT topic per table." ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "mqtt_qos", "MQTT QoS. 0 = at most once, 1 = at least once, 2 = exactly once. Default is 0." ).withOptionalArg().ofType(Integer.class);
+
 		parser.section("metrics");
 
 		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withRequiredArg();
@@ -1112,6 +1128,13 @@ public class MaxwellConfig extends AbstractConfig {
 		this.redisSentinelMasterName = fetchStringOption("redis_sentinel_master_name", options, properties, null);
 
 		this.redisType			= fetchStringOption("redis_type", options, properties, "pubsub");
+
+		this.mqttPublisherId		= fetchStringOption("mqtt_publisher_id", options, properties, UUID.randomUUID().toString());
+		this.mqttConnectionTimeout	= fetchIntegerOption("mqtt_connection_timeout", options, properties, 30);
+		this.mqttTopic				= fetchStringOption("mqtt_topic", options, properties, null);
+		this.mqttTopicPerTable		= fetchBooleanOption("mqtt_topic_per_table", options, properties, false);
+		this.mqttUrl				= fetchStringOption("mqtt_url", options, properties, null);
+		this.mqttQos				= fetchIntegerOption("mqtt_qos", options, properties, 0);
 
 		String kafkaBootstrapServers = fetchStringOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
